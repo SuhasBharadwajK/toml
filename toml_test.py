@@ -2,6 +2,7 @@ import toml
 import sys
 import argparse
 import os
+from datetime import datetime
 
 # Get the public IP address of the server using the OpenDNS.
 command_stream = os.popen('dig +short myip.opendns.com @resolver1.opendns.com')
@@ -33,10 +34,13 @@ for name in os.listdir(server_dir):
         toml_filename = "agent.toml"
         toml_filepath = os.path.join(dir_path, toml_filename)
         toml_file = open(toml_filename, "r") #TODO: Change this to toml_filepath
+        toml_text = toml_file.read()
 
         # Save a backup of the file in agent.toml.old.timestamp
-
-        toml_text = toml_file.read()
+        backup_filename = toml_filename.split('.')[0] + '.' + datetime.now().isoformat().replace(':', '.') + '.' + toml_filename.split('.')[1]
+        backup_file = open(backup_filename, "w")
+        backup_file.write(toml_text)
+        backup_file.close()
 
         parsed_toml = toml.loads(toml_text)
 
