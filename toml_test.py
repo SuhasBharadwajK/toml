@@ -44,7 +44,7 @@ for name in os.listdir(server_dir):
 
         # Save a backup of the file in agent.toml.old.timestamp
         backup_filename = toml_filename.split('.')[0] + '.' + timestamp + '.' + toml_filename.split('.')[1]
-        backup_filepath = os.path.join(server_dir, current_folder, backup_filename)
+        backup_filepath = os.path.join(dir_path, backup_filename)
         backup_file = open(backup_filepath, "w")
         backup_file.write(toml_text)
         backup_file.close()
