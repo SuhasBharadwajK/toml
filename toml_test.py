@@ -33,11 +33,13 @@ for name in os.listdir(server_dir):
 
         toml_filename = "agent.toml"
         toml_filepath = os.path.join(dir_path, toml_filename)
-        toml_file = open(toml_filename, "r") #TODO: Change this to toml_filepath
+        toml_file = open(toml_filepath, "r")
         toml_text = toml_file.read()
+        toml_file.close()
 
         # Save a backup of the file in agent.toml.old.timestamp
-        backup_filename = toml_filename.split('.')[0] + '.' + datetime.now().isoformat().replace(':', '.') + '.' + toml_filename.split('.')[1]
+        timestamp = datetime.now().isoformat().replace(':', '.')
+        backup_filename = toml_filename.split('.')[0] + '.' + timestamp + '.' + toml_filename.split('.')[1]
         backup_file = open(backup_filename, "w")
         backup_file.write(toml_text)
         backup_file.close()
@@ -48,8 +50,25 @@ for name in os.listdir(server_dir):
         ip_key = "ip_address"
 
         if(internal_key in parsed_toml.keys() and ip_key in parsed_toml[internal_key].keys()):
-            parsed_toml['internal']['ip_address'] = public_ip
+            parsed_toml[internal_key][ip_key] = public_ip
 
-        toml_string = toml.dumps(parsed_toml)
+        webrtc_key = "webrtc"
+        network_interfaces_key = "network_interfaces"
+        net_interface_name_key = "name"
+        replaced_ip_key = "replaced_ip_address"
+
+        # If the current directory is 'webrtc_agent', update the 'network_interfaces' member
+        current_folder = dir_path.split('/')[-1]
+        if current_folder == "webrtc_agent" and webrtc_key in parsed_toml.keys() and network_interfaces_key in parsed_toml[webrtc_key].keys():
+            if len(parsed_toml[webrtc_key][network_interfaces_key]) == 0:
+                network_interface = dict({net_interface_name_key: "eth0", replaced_ip_key: public_ip})
+                parsed_toml[webrtc_key][network_interfaces_key].append(network_interface)
+            else:
+                parsed_toml[webrtc_key][network_interfaces_key][0][replaced_ip_key] = public_ip
+
+        toml_text = toml.dumps(parsed_toml)
 
         # Save the TOML file.
+        toml_file = open(toml_filepath, "w")
+        toml_file.write(toml_text)
+        toml_file.close()
