@@ -25,12 +25,17 @@ if(hasattr(args, 'ip')):
 
 server_dir = args.owt_server_dir or '.'
 
+timestamp = datetime.now().isoformat().replace(':', '.')
+
+print(server_dir)
 # Get all the agent folders in the OWT server's directory
 for name in os.listdir(server_dir):
     # Iterate over each folder and parse the TOML file and set the IP address.
     dir_path = os.path.join(server_dir, name)
+    print(dir_path)
     if os.path.isdir(dir_path) and '_agent' in name:
-
+        current_folder = dir_path.split('/')[-1]
+        print(current_folder)
         toml_filename = "agent.toml"
         toml_filepath = os.path.join(dir_path, toml_filename)
         toml_file = open(toml_filepath, "r")
@@ -38,11 +43,11 @@ for name in os.listdir(server_dir):
         toml_file.close()
 
         # Save a backup of the file in agent.toml.old.timestamp
-        timestamp = datetime.now().isoformat().replace(':', '.')
         backup_filename = toml_filename.split('.')[0] + '.' + timestamp + '.' + toml_filename.split('.')[1]
-        backup_file = open(backup_filename, "w")
-        backup_file.write(toml_text)
-        backup_file.close()
+        backup_filepath = os.path.join(server_dir, current_folder, backup_filename)
+        #backup_file = open(backup_filepath, "w")
+        #backup_file.write(toml_text)
+        #backup_file.close()
 
         parsed_toml = toml.loads(toml_text)
 
@@ -58,17 +63,38 @@ for name in os.listdir(server_dir):
         replaced_ip_key = "replaced_ip_address"
 
         # If the current directory is 'webrtc_agent', update the 'network_interfaces' member
-        current_folder = dir_path.split('/')[-1]
         if current_folder == "webrtc_agent" and webrtc_key in parsed_toml.keys() and network_interfaces_key in parsed_toml[webrtc_key].keys():
-            if len(parsed_toml[webrtc_key][network_interfaces_key]) == 0:
-                network_interface = dict({net_interface_name_key: "eth0", replaced_ip_key: public_ip})
-                parsed_toml[webrtc_key][network_interfaces_key].append(network_interface)
-            else:
-                parsed_toml[webrtc_key][network_interfaces_key][0][replaced_ip_key] = public_ip
+            if len(parsed_toml[webrtc_key][network_interfaces_key]) != 0:
+                parsed_toml[webrtc_key][network_interfaces_key] = []
 
-        toml_text = toml.dumps(parsed_toml)
+            network_interface = dict({net_interface_name_key: "eth0", replaced_ip_key: public_ip})
+            parsed_toml[webrtc_key][network_interfaces_key].append(network_interface)
 
         # Save the TOML file.
-        toml_file = open(toml_filepath, "w")
+        #toml_file = open(toml_filepath, "w")
+
+        #TODO: Temp
+        current_dir = os.getcwd()
+        new_folder_path = os.path.join(current_dir, "test" + timestamp)
+        if not os.path.exists(new_folder_path):
+            os.mkdir(new_folder_path)
+
+        print(new_folder_path)
+
+        new_folder_path = os.path.join(new_folder_path, current_folder)
+        print(new_folder_path)
+        if not os.path.exists(new_folder_path):
+            os.mkdir(new_folder_path)
+
+        backup_filename = toml_filename.split('.')[0] + '.' + timestamp + '.' + toml_filename.split('.')[1]
+        backup_filepath = os.path.join(new_folder_path, backup_filename)
+        backup_file = open(backup_filepath, "w")
+        backup_file.write(toml_text)
+        backup_file.close()
+
+        #TODO: End temp
+
+        toml_text = toml.dumps(parsed_toml)
+        toml_file = open(os.path.join(new_folder_path, toml_filename), "w")
         toml_file.write(toml_text)
         toml_file.close()
