@@ -45,9 +45,9 @@ for name in os.listdir(server_dir):
         # Save a backup of the file in agent.toml.old.timestamp
         backup_filename = toml_filename.split('.')[0] + '.' + timestamp + '.' + toml_filename.split('.')[1]
         backup_filepath = os.path.join(server_dir, current_folder, backup_filename)
-        #backup_file = open(backup_filepath, "w")
-        #backup_file.write(toml_text)
-        #backup_file.close()
+        backup_file = open(backup_filepath, "w")
+        backup_file.write(toml_text)
+        backup_file.close()
 
         parsed_toml = toml.loads(toml_text)
 
@@ -71,30 +71,7 @@ for name in os.listdir(server_dir):
             parsed_toml[webrtc_key][network_interfaces_key].append(network_interface)
 
         # Save the TOML file.
-        #toml_file = open(toml_filepath, "w")
-
-        #TODO: Temp
-        current_dir = os.getcwd()
-        new_folder_path = os.path.join(current_dir, "test" + timestamp)
-        if not os.path.exists(new_folder_path):
-            os.mkdir(new_folder_path)
-
-        print(new_folder_path)
-
-        new_folder_path = os.path.join(new_folder_path, current_folder)
-        print(new_folder_path)
-        if not os.path.exists(new_folder_path):
-            os.mkdir(new_folder_path)
-
-        backup_filename = toml_filename.split('.')[0] + '.' + timestamp + '.' + toml_filename.split('.')[1]
-        backup_filepath = os.path.join(new_folder_path, backup_filename)
-        backup_file = open(backup_filepath, "w")
-        backup_file.write(toml_text)
-        backup_file.close()
-
-        #TODO: End temp
-
         toml_text = toml.dumps(parsed_toml)
-        toml_file = open(os.path.join(new_folder_path, toml_filename), "w")
+        toml_file = open(toml_filepath, "w")
         toml_file.write(toml_text)
         toml_file.close()
