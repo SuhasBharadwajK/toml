@@ -32,12 +32,10 @@ print(server_dir)
 for name in os.listdir(server_dir):
     # Iterate over each folder and parse the TOML file and set the IP address.
     dir_path = os.path.join(server_dir, name)
-    print(dir_path)
     if os.path.isdir(dir_path) and ('_agent' in name or name == "portal"):
         is_portal_folder = name == "portal"
         current_folder = dir_path.split('/')[-1]
-        print(current_folder)
-        toml_filename = "agent.toml" if is_portal_folder else "portal.toml"
+        toml_filename = ("portal" if is_portal_folder else "agent") + ".toml"
         toml_filepath = os.path.join(dir_path, toml_filename)
         toml_file = open(toml_filepath, "r")
         toml_text = toml_file.read()
@@ -45,10 +43,13 @@ for name in os.listdir(server_dir):
 
         # Save a backup of the file in agent.toml.old.timestamp
         backup_filename = toml_filename.split('.')[0] + '.' + timestamp + '.' + toml_filename.split('.')[1]
+        
+        print("Backing up " + toml_filepath + "...")
         backup_filepath = os.path.join(dir_path, backup_filename)
         backup_file = open(backup_filepath, "w")
         backup_file.write(toml_text)
         backup_file.close()
+        print("Backup of " + toml_filepath + " success")
 
         parsed_toml = toml.loads(toml_text)
 
@@ -56,7 +57,7 @@ for name in os.listdir(server_dir):
         ip_key = "ip_address"
         portal_key = "portal"
 
-        current_key = portal_key if is_portal_folder else portal_key
+        current_key = portal_key if is_portal_folder else internal_key
 
         if(current_key in parsed_toml.keys() and ip_key in parsed_toml[current_key].keys()):
             parsed_toml[current_key][ip_key] = public_ip
@@ -75,7 +76,9 @@ for name in os.listdir(server_dir):
             parsed_toml[webrtc_key][network_interfaces_key].append(network_interface)
 
         # Save the TOML file.
+        print("Updating " + toml_filepath + "...")
         toml_text = toml.dumps(parsed_toml)
         toml_file = open(toml_filepath, "w")
         toml_file.write(toml_text)
         toml_file.close()
+        print("Update of " + toml_filepath + " success")
