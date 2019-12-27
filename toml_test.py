@@ -33,10 +33,11 @@ for name in os.listdir(server_dir):
     # Iterate over each folder and parse the TOML file and set the IP address.
     dir_path = os.path.join(server_dir, name)
     print(dir_path)
-    if os.path.isdir(dir_path) and '_agent' in name:
+    if os.path.isdir(dir_path) and ('_agent' in name or name == "portal"):
+        is_portal_folder = name == "portal"
         current_folder = dir_path.split('/')[-1]
         print(current_folder)
-        toml_filename = "agent.toml"
+        toml_filename = "agent.toml" if is_portal_folder else "portal.toml"
         toml_filepath = os.path.join(dir_path, toml_filename)
         toml_file = open(toml_filepath, "r")
         toml_text = toml_file.read()
@@ -53,9 +54,12 @@ for name in os.listdir(server_dir):
 
         internal_key = "internal"
         ip_key = "ip_address"
+        portal_key = "portal"
 
-        if(internal_key in parsed_toml.keys() and ip_key in parsed_toml[internal_key].keys()):
-            parsed_toml[internal_key][ip_key] = public_ip
+        current_key = portal_key if is_portal_folder else portal_key
+
+        if(current_key in parsed_toml.keys() and ip_key in parsed_toml[current_key].keys()):
+            parsed_toml[current_key][ip_key] = public_ip
 
         webrtc_key = "webrtc"
         network_interfaces_key = "network_interfaces"
